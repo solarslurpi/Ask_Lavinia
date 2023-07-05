@@ -1,6 +1,7 @@
 import logging
 import inspect
 import time
+import toml
 
 
 class LoggingHandler:
@@ -20,11 +21,22 @@ class LoggingHandler:
         self.logger.setLevel(log_level)
 
         if not self.logger.hasHandlers():
+            try:
+                config = toml.load("app_config.toml")
+            except Exception as e:
+                print(f"Error trying to load toml file: {e} ")
+            try:
+                logfilename = config["log_file"]
+            except:
+                logfilename = None
             if filename:
                 handler = logging.FileHandler(filename)
+            elif logfilename:
+                handler = logging.FileHandler(logfilename)
             else:
                 handler = logging.StreamHandler()
             self.logger.addHandler(handler)
+
 
     def _log(self, level, color, message, color_reset):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())

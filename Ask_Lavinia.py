@@ -19,9 +19,11 @@ from myutils import utils_load_index
 import logging
 from logging_handler import LoggingHandler
 
-log_level = logging.DEBUG
+
+
 if "logger" not in st.session_state:
-    st.session_state["logger"] = LoggingHandler(log_level=log_level)
+    st.session_state["logger"] = LoggingHandler(
+        log_level=logging.DEBUG)
 if "questions_asked" not in st.session_state:
     st.session_state["questions_asked"] = set()
 
@@ -38,8 +40,6 @@ if config["settings"]["visible"]:
         visible = True if choice == "Yes" else False
         st.session_state["logger"].DEBUG(f"Visibility: {visible}")
         st.markdown(f"Visibility: {visible}")
-
-
 
 placeholder_question = "Please enter your question here then hit Return."
 question = st.text_input(":sparkles: Question", placeholder=placeholder_question)
@@ -87,5 +87,5 @@ with st.spinner("Hold on...opening the Agreement..."):
         ":female-doctor: Open the 2022-2024 Evergreen Employment Agreement with Nurses Union",
         type="primary",
     ):
-        pdf_display = ui_get_pdf_display("Evergreen-Contract-2022-2024.pdf")
+        pdf_display = ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf")
         st.markdown(pdf_display, unsafe_allow_html=True)

@@ -1,16 +1,21 @@
 import streamlit as st
 from llama_index import Prompt
 import sqlite3
+from logging_handler import LoggingHandler
+import logging
 
+logger = LoggingHandler(log_level=logging.DEBUG)
 
-def get_all_questions():
+def get_questions(visible=True):
     # Open a connection to the SQLite database
     conn = sqlite3.connect("askl.db")
-
     # Get a cursor to retrieve rows
     c = conn.cursor()
+    query_str = "SELECT question, response FROM qa_table"
+    if visible:
+        query_str = query_str + " WHERE visible = 1"
     try:
-        c.execute("SELECT question, response FROM qa_table")
+        c.execute(query_str)
     except sqlite3.OperationalError as e:
         pass  # No qa db is empty.
         # if e.args[0] == "table 'qa_table' does not exist":
@@ -28,7 +33,7 @@ def get_all_questions():
 
 
 def ui_display_questions():
-    records = get_all_questions()
+    records = get_questions()
     questions = [rec[0] for rec in records]
     responses = {rec[0]: rec[1] for rec in records}
 
@@ -116,12 +121,16 @@ import base64
 
 
 def ui_get_pdf_display(filename: str):
+
     try:
         with open(filename, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="800" type="application/pdf"></iframe>'
+            logger.INFO("Opened the Evergreen pdf file for display.")
+            return pdf_display
     except FileNotFoundError:
-        print("File not found.")
+        logger.ERROR(f("PDF file {filename} could not be opened."))
     except IOError:
-        print("An error occurred while reading the file.")
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="800" type="application/pdf"></iframe>'
+        logger.ERROR("An error occurred while reading the PDF file {filename}.")
+
     return pdf_display
