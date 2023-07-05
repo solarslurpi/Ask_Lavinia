@@ -6,6 +6,8 @@ import logging
 
 logger = LoggingHandler(log_level=logging.DEBUG)
 
+
+@st.cache_data
 def get_questions(visible=True):
     # Open a connection to the SQLite database
     conn = sqlite3.connect("askl.db")
@@ -44,6 +46,8 @@ def ui_display_questions():
 
 
 # Show summary in a sidebar:
+
+
 def ui_add_sidebar():
     st.sidebar.markdown(
         "**:blue[2022-2024 Evergreen Employment Agreement with Nurses Union]**"
@@ -103,11 +107,15 @@ def ui_add_header():
     st.subheader("About the Employment Agreement with Evergreen")
 
 
+@st.cache_data
 def ui_build_prompt():
     PROMPT_TMPL_STR = (
         "Given this context information --> {context_str} <-- \n"
         "and no prior knowledge, answer the question: {query_str}.\n"
+        "If you do not think this is a question, return and let the user know in kind words to rephrase the question since you didn't understand it.\n"
+        "If the question has nothing to do with a question one would ask a hospital and Nurses' unions employment contract, return and kindly let the user know."
         "The response should adhere to these guidelines:\n"
+        "Start by writing out what the question was: {query_str} then:\n"
         "- Provide the answer as a markdown formatted unordered (bulleted) list. \n"
         "- Each bullet point should include a fact and the article number where the fact is discussed.\n"
         "- Make sure each sub-answer on the list appears on a new line using markdown unordered list format.\n"
@@ -120,8 +128,8 @@ def ui_build_prompt():
 import base64
 
 
+@st.cache_data
 def ui_get_pdf_display(filename: str):
-
     try:
         with open(filename, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode("utf-8")

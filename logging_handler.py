@@ -37,7 +37,6 @@ class LoggingHandler:
                 handler = logging.StreamHandler()
             self.logger.addHandler(handler)
 
-
     def _log(self, level, color, message, color_reset):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         f = inspect.currentframe()

@@ -18,21 +18,25 @@ from ui_components import (
 from myutils import utils_load_index
 import logging
 from logging_handler import LoggingHandler
-
+import openai
+# Get open ai key from shared secrets streamlit service...
+openai.api_key = st.secrets['OPENAI_API_KEY']
 
 
 if "logger" not in st.session_state:
-    st.session_state["logger"] = LoggingHandler(
-        log_level=logging.DEBUG)
+    st.session_state["logger"] = LoggingHandler(log_level=logging.DEBUG)
 if "questions_asked" not in st.session_state:
     st.session_state["questions_asked"] = set()
+
+if "config" not in st.session_state:
+    config = toml.load("app_config.toml")
 
 visible = False
 st.session_state["logger"].DEBUG("At the top of the code.")
 ui_add_sidebar()
 ui_add_header()
-config = toml.load("app_config.toml")
-if config["settings"]["visible"]:
+st.session_state["config"] = toml.load("app_config.toml")
+if st.session_state["config"]["settings"]["visible"]:
     st.markdown(f"Visibility: {visible}")
     choice = st.radio("Visible?", ("Yes", "No"))
 
@@ -48,18 +52,20 @@ if question not in st.session_state["questions_asked"] and len(question) != 0:
     st.session_state["logger"].DEBUG(f"QUESTION: {question}")
     st.session_state["questions_asked"].add(question)
     with st.spinner("Let me check..."):
+        model_name = "gpt-3.5-turbo"
+        token_count = TokenCount(model_name, verbose=False)
+        service_context = ServiceContext.from_defaults(
+            callback_manager=token_count.callback_manager
+        )
         st.markdown(
             "Thank you for your patience; retrieving your answer may take a bit. I'll be back as soon as I can."
         )
         if "query_engine" not in st.session_state:
             index = utils_load_index("indices/vector_index")
             # Set up for getting cost info.
-            model_name = "gpt-3.5-turbo"
+
             st.session_state["logger"].DEBUG(f"MODEL NAME: {model_name}")
-            token_count = TokenCount(model_name, verbose=False)
-            service_context = ServiceContext.from_defaults(
-                callback_manager=token_count.callback_manager
-            )
+
             QA_TEMPLATE = ui_build_prompt()
             st.session_state["logger"].DEBUG(f"Prompt Template: {QA_TEMPLATE.prompt}")
             st.session_state["query_engine"] = index.as_query_engine(
@@ -67,17 +73,20 @@ if question not in st.session_state["questions_asked"] and len(question) != 0:
                 service_context=service_context,
                 text_qa_template=QA_TEMPLATE,
             )
-            response = st.session_state["query_engine"].query(question)
-            st.markdown(response.response)
-            cost = utils_calculate_cost(
-                model_name,
-                token_count.prompt_token_count,
-                token_count.completion_token_count,
-            )
-            st.session_state["logger"].DEBUG(
-                f"\nRESPONSE: {response.response},\n\nCOST: {cost}"
-            )
-            utils_store_qa(visible, cost, question, response.response)
+
+        response = st.session_state["query_engine"].query(question)
+        st.markdown(response.response)
+
+
+        cost = utils_calculate_cost(
+            model_name,
+            token_count.prompt_token_count,
+            token_count.completion_token_count,
+        )
+        st.session_state["logger"].DEBUG(
+            f"\nRESPONSE: {response.response},\n\nCOST: {cost}"
+        )
+        utils_store_qa(visible, cost, question, response.response)
 
 # Add space
 for _ in range(3):
