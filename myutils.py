@@ -175,7 +175,7 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
         raise Exception("ERROR: Not able to create the db table qa_table.")
 
     # Check if a row with the same question already exists
-    cur.execute("SELECT * FROM qa_table WHERE question = ?", (question,))
+    cur.execute("SELECT * FROM qa_table WHERE question LIKE ?", (question,))
     existing_row = cur.fetchone()  # fetchone() returns None if no row is found
 
     # If no row with the same question exists, insert the new row

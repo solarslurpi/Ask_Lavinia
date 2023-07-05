@@ -13,7 +13,7 @@ from ui_components import (
     ui_add_header,
     ui_add_sidebar,
     ui_build_prompt,
-    ui_get_pdf_display,
+    ui_get_pdf_for_download,
 )
 from myutils import utils_load_index
 import logging
@@ -89,12 +89,22 @@ if question not in st.session_state["questions_asked"] and len(question) != 0:
         utils_store_qa(visible, cost, question, response.response)
 
 # Add space
-for _ in range(3):
-    st.text("")
-with st.spinner("Hold on...opening the Agreement..."):
-    if st.button(
-        ":female-doctor: Open the 2022-2024 Evergreen Employment Agreement with Nurses Union",
-        type="primary",
-    ):
-        pdf_display = ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf")
-        st.markdown(pdf_display, unsafe_allow_html=True)
+# for _ in range(3):
+#     st.text("")
+
+st.btn = ui_get_pdf_for_download("docs/Evergreen-Contract-2022-2024.pdf")
+# with st.spinner("Hold on...opening the Agreement..."):
+#     if ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf"):
+#         pass
+    # if st.button(
+    #     ":female-doctor: Open the 2022-2024 Evergreen Employment Agreement with Nurses Union",
+    #     type="primary",
+    # ):
+    #     # pdf_display = ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf")
+    #     # st.markdown(pdf_display, unsafe_allow_html=True)
+    #     link = """
+    #     <a href="https://en.wikipedia.org/wiki/Lavinia_Dock" target="_blank">
+    #         <input type="button" value="About Lavinia" style="color: white; background-color: #3399ff; border: none; border-radius: 15px; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 2px; cursor: pointer; transition-duration: 0.4s;">
+    #     </a>
+    #     """
+    #     st.markdown(link, unsafe_allow_html=True)

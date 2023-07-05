@@ -104,6 +104,7 @@ def ui_add_header():
     </a>
     """
     col2.markdown(link, unsafe_allow_html=True)
+
     st.subheader("About the Employment Agreement with Evergreen")
 
 
@@ -127,7 +128,7 @@ def ui_build_prompt():
 
 import base64
 
-
+## Hmmm...this worked locally for me but not when I hosted on streamlit...TODO...
 @st.cache_data
 def ui_get_pdf_display(filename: str):
     try:
@@ -142,3 +143,15 @@ def ui_get_pdf_display(filename: str):
         logger.ERROR("An error occurred while reading the PDF file {filename}.")
 
     return pdf_display
+
+def ui_get_pdf_for_download(filename: str):
+    with open(filename, "rb") as f:
+        # base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+        btn = st.download_button(
+                data=f,
+                file_name=filename,
+                mime="application/pdf",
+                label="Download the Evergreen Contract PDF"
+        )
+    return btn
+
