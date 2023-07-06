@@ -19,6 +19,8 @@ import json
 import sqlite3
 from logging_handler import LoggingHandler
 import logging
+import streamlit as st
+from sqlalchemy import text
 
 
 def _setup_store() -> FaissVectorStore:
@@ -156,44 +158,41 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
     #     f.write(f"Response: {response}\n")
     # Added user feedback functionality
     logger = LoggingHandler(log_level=logging.DEBUG)
-    dbname = "askl.db"
-    conn = sqlite3.connect(dbname)
-    cur = conn.cursor()
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS qa_table (
+    # conn = sqlite3.connect(dbname)
+    conn = st.experimental_connection('askl', type='sql')
+    with conn.session as s:
+        # Create the qa table if it does not exist.
+        s.execute(text("""CREATE TABLE IF NOT EXISTS qa_table (
             questionID INTEGER PRIMARY KEY AUTOINCREMENT,
             visible BOOL,
             cost REAL, 
             question TEXT, 
             response TEXT
-        )"""
-    )
-    # Check to make sure table was created.
-    res = cur.execute("Select name FROM sqlite_master")
-    table_name = res.fetchone()[0]
-    if table_name != "qa_table":
-        raise Exception("ERROR: Not able to create the db table qa_table.")
+        )"""))
+        # Check to make sure table was created.
+        res = s.execute(text("Select name FROM sqlite_master"))
+        table_name = res.fetchone()[0]
+        if table_name != "qa_table":
+            raise Exception("ERROR: Table qa_table could not be created.")
+        # Check if a row with the same question already exists
+        res = s.execute(text("SELECT * FROM qa_table WHERE question LIKE ?", (question,)))
+        existing_row = res.fetchone()  # fetchone() returns None if no row is found
 
-    # Check if a row with the same question already exists
-    cur.execute("SELECT * FROM qa_table WHERE question LIKE ?", (question,))
-    existing_row = cur.fetchone()  # fetchone() returns None if no row is found
+        # If no row with the same question exists, insert the new row
+        if existing_row is None:
+            s.execute(text(
+                """
+                INSERT INTO qa_table (visible, cost, question, response)
+                VALUES ( ?, ?, ?, ?)
+            """,
+                (visible, cost, question, response),
+            ))
+            logger.DEBUG(f"Wrote row to the table {table_name}")
+        else:
+            logger.DEBUG(f"Row with {question} already exists in {table_name}")
 
-    # If no row with the same question exists, insert the new row
-    if existing_row is None:
-        cur.execute(
-            """
-            INSERT INTO qa_table (visible, cost, question, response)
-            VALUES ( ?, ?, ?, ?)
-        """,
-            (visible, cost, question, response),
-        )
-        logger.DEBUG(f"Wrote row to the table {table_name}")
-    else:
-        logger.DEBUG(f"Row with {question} already exists in {table_name}")
-
-    # Commit the changes and close the connection
-    conn.commit()
-    conn.close()
+        # Commit the changes 
+        s.commit()
 
 
 class TokenCount:
