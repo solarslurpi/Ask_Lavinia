@@ -175,7 +175,7 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
         if table_name != "qa_table":
             raise Exception("ERROR: Table qa_table could not be created.")
         # Check if a row with the same question already exists
-        res = s.execute(text("SELECT * FROM qa_table WHERE question LIKE ?", (question,)))
+        res = s.execute(text(f"SELECT * FROM qa_table WHERE question LIKE '{question}'"))
         existing_row = res.fetchone()  # fetchone() returns None if no row is found
 
         # If no row with the same question exists, insert the new row
@@ -183,10 +183,18 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
             s.execute(text(
                 """
                 INSERT INTO qa_table (visible, cost, question, response)
-                VALUES ( ?, ?, ?, ?)
-            """,
-                (visible, cost, question, response),
-            ))
+                VALUES (:visible, :cost, :question, :response)
+                """),
+                {"visible": visible, "cost": cost, "question": question, "response": response},
+            )  
+
+            # s.execute(text(
+            #     """
+            #     INSERT INTO qa_table (visible, cost, question, response)
+            #     VALUES ( ?, ?, ?, ?)
+            # """),
+            #     (visible, cost, question, response),
+            # )
             logger.DEBUG(f"Wrote row to the table {table_name}")
         else:
             logger.DEBUG(f"Row with {question} already exists in {table_name}")
