@@ -159,34 +159,47 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
     # Added user feedback functionality
     logger = LoggingHandler(log_level=logging.DEBUG)
     # conn = sqlite3.connect(dbname)
-    conn = st.experimental_connection('askl', type='sql')
+    conn = st.experimental_connection("askl", type="sql")
     with conn.session as s:
         # Create the qa table if it does not exist.
-        s.execute(text("""CREATE TABLE IF NOT EXISTS qa_table (
+        s.execute(
+            text(
+                """CREATE TABLE IF NOT EXISTS qa_table (
             questionID INTEGER PRIMARY KEY AUTOINCREMENT,
             visible BOOL,
             cost REAL, 
             question TEXT, 
             response TEXT
-        )"""))
+        )"""
+            )
+        )
         # Check to make sure table was created.
         res = s.execute(text("Select name FROM sqlite_master"))
         table_name = res.fetchone()[0]
         if table_name != "qa_table":
             raise Exception("ERROR: Table qa_table could not be created.")
         # Check if a row with the same question already exists
-        res = s.execute(text(f"SELECT * FROM qa_table WHERE question LIKE '{question}'"))
+        res = s.execute(
+            text(f"SELECT * FROM qa_table WHERE question LIKE '{question}'")
+        )
         existing_row = res.fetchone()  # fetchone() returns None if no row is found
 
         # If no row with the same question exists, insert the new row
         if existing_row is None:
-            s.execute(text(
-                """
+            s.execute(
+                text(
+                    """
                 INSERT INTO qa_table (visible, cost, question, response)
                 VALUES (:visible, :cost, :question, :response)
-                """),
-                {"visible": visible, "cost": cost, "question": question, "response": response},
-            )  
+                """
+                ),
+                {
+                    "visible": visible,
+                    "cost": cost,
+                    "question": question,
+                    "response": response,
+                },
+            )
 
             # s.execute(text(
             #     """
@@ -199,7 +212,7 @@ def utils_store_qa(visible: bool, cost: float, question: str, response: str):
         else:
             logger.DEBUG(f"Row with {question} already exists in {table_name}")
 
-        # Commit the changes 
+        # Commit the changes
         s.commit()
 
 

@@ -19,8 +19,9 @@ from myutils import utils_load_index
 import logging
 from logging_handler import LoggingHandler
 import openai
+
 # Get open ai key from shared secrets streamlit service...
-openai.api_key = st.secrets['OPENAI_API_KEY']
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 
 if "logger" not in st.session_state:
@@ -77,7 +78,6 @@ if question not in st.session_state["questions_asked"] and len(question) != 0:
         response = st.session_state["query_engine"].query(question)
         st.markdown(response.response)
 
-
         cost = utils_calculate_cost(
             model_name,
             token_count.prompt_token_count,
@@ -96,15 +96,15 @@ st.btn = ui_get_pdf_for_download("docs/Evergreen-Contract-2022-2024.pdf")
 # with st.spinner("Hold on...opening the Agreement..."):
 #     if ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf"):
 #         pass
-    # if st.button(
-    #     ":female-doctor: Open the 2022-2024 Evergreen Employment Agreement with Nurses Union",
-    #     type="primary",
-    # ):
-    #     # pdf_display = ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf")
-    #     # st.markdown(pdf_display, unsafe_allow_html=True)
-    #     link = """
-    #     <a href="https://en.wikipedia.org/wiki/Lavinia_Dock" target="_blank">
-    #         <input type="button" value="About Lavinia" style="color: white; background-color: #3399ff; border: none; border-radius: 15px; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 2px; cursor: pointer; transition-duration: 0.4s;">
-    #     </a>
-    #     """
-    #     st.markdown(link, unsafe_allow_html=True)
+# if st.button(
+#     ":female-doctor: Open the 2022-2024 Evergreen Employment Agreement with Nurses Union",
+#     type="primary",
+# ):
+#     # pdf_display = ui_get_pdf_display("docs/Evergreen-Contract-2022-2024.pdf")
+#     # st.markdown(pdf_display, unsafe_allow_html=True)
+#     link = """
+#     <a href="https://en.wikipedia.org/wiki/Lavinia_Dock" target="_blank">
+#         <input type="button" value="About Lavinia" style="color: white; background-color: #3399ff; border: none; border-radius: 15px; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 2px; cursor: pointer; transition-duration: 0.4s;">
+#     </a>
+#     """
+#     st.markdown(link, unsafe_allow_html=True)
