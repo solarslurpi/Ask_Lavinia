@@ -55,7 +55,7 @@ with st.echo():
         st.markdown(f"Note that `s` is a `{type(s)}`")
         s.execute(text('CREATE TABLE IF NOT EXISTS pet_owners (person TEXT, pet TEXT);'))
         s.execute(text('DELETE FROM pet_owners;'))
-        pet_owners = {'jerry': 'fish', 'barbara': 'cat', 'alex': 'puppy'}
+        pet_owners = {'juju': 'fish', 'dan': 'cat', 'sam': 'puppy'}
         for k in pet_owners:
             s.execute(
                 text('INSERT INTO pet_owners (person, pet) VALUES (:owner, :pet);'),
